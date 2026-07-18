@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseñador de Micro-Rutinas 15 Minutos Sin Dolor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rosegold: {
+                            50: '#fdf8f7',
+                            100: '#fbeee2',
+                            200: '#f5d6cb',
+                            400: '#e2af9f',
+                            500: '#c28475',
+                            600: '#a86759',
+                        },
+                        linen: {
+                            50: '#fdfbf7',
+                            100: '#faf6f0',
+                            200: '#f3ebd9',
+                        },
+                        lavender: {
+                            100: '#f3eefc',
+                            600: '#704287',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#fcf9f5] text-slate-800 antialiased p-4 m-0 min-h-screen flex items-center justify-center">
+
+    <div id="root" class="w-full max-w-xl"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Iconos SVG Nativos (Evitan de raíz los bloqueos de carga local)
+        const IconSparkles = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 21l-.813-5.096L3 15l5.187-.813L9 9l.813 5.187L15 15l-5.187.813ZM18.079 7.925 17 11l-1.079-3.075L12.85 7 15.925 5.921 17 3l1.079 2.921L21.15 7l-3.071.925Z"/></svg>;
+        const IconLeaf = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9M12 12c2.5 0 4.5-2 4.5-4.5S14.5 3 12 3"/></svg>;
+        const IconHeart = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg>;
+        const IconZap = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>;
+        const IconClock = ({className = "w-4 h-4"}) => <svg class={className} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>;
+        const IconChevronRight = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>;
+        const IconPlay = () => <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>;
+        const IconCheck = () => <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>;
+        const IconRotate = () => <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>;
+        const IconAward = () => <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 0 3-3V13.5M16.5 18.75V13.5m-9 5.25H6a3 3 0 0 1-3-3V13.5m3.75 5.25V13.5m0 0V7.5a2.25 2.25 0 0 1 2.25-2.25h9a2.25 2.25 0 0 1 2.25 2.25V13.5m-13.5 0h13.5"/></svg>;
+
+        const DATA_RUTINAS = {
+            espalda: {
+                titulo: "Liberación Lumbar Suave",
+                enfoque: "Descomprime vértebras y libera la tensión acumulada sin forzar tu postura.",
+                icono: IconSparkles,
+                ejercicios: [
+                    { tiempo: "3 Min", nombre: "Respiración Pélvica Consciente", desc: "Acostada boca arriba con rodillas dobladas. Conecta con tu respiración profunda y balancea suavemente la pelvis para masajear la zona sacra.", video: "https://www.youtube.com/watch?v=UfH88-yUv-U" },
+                    { tiempo: "7 Min", nombre: "Secuencia Gato-Vaca Fluida", desc: "En posición de 4 puntos. Arquea y flexiona la columna de forma lenta siguiendo tu ritmo respiratorio para dar flexibilidad.", video: "https://www.youtube.com/watch?v=ZfH7h2XWgQ8" },
+                    { tiempo: "5 Min", nombre: "Postura del Niño Expandida", desc: "Lleva los glúteos hacia los talones y estira los brazos al frente, relajando por completo la frente en el suelo.", video: "https://www.youtube.com/watch?v=cKyA26VFEIg" }
+                ]
+            },
+            cuello: {
+                titulo: "Desbloqueo Cervical y de Hombros",
+                enfoque: "Derrite la pesadez y rigidez de los trapecios causada por estrés o posturas fijas.",
+                icono: IconLeaf,
+                ejercicios: [
+                    { tiempo: "3 Min", nombre: "Círculos de Hombros Conscientes", desc: "Movimientos circulares lentos hacia atrás y adelante para liberar cargas acumuladas en la cintura escapular.", video: "https://www.youtube.com/watch?v=3MbHgk-zvP8" },
+                    { tiempo: "7 Min", nombre: "Estiramiento Lateral de Trapecios", desc: "Lleva suavemente la oreja hacia el hombro de forma pasiva, respirando profundo hacia el lateral de tu cuello.", video: "https://www.youtube.com/watch?v=1rIlYhqibb4" },
+                    { tiempo: "5 Min", nombre: "Apertura de Pecho en Puerta", desc: "Apoya tus antebrazos en el marco de una puerta y da un paso al frente para estirar la cadena anterior de hombros.", video: "https://youtu.be/SnLuT27mWt8?si=DgGMTNmQBh7VF-NH" }
+                ]
+            },
+            rodillas: {
+                titulo: "Activación y Lubricación Articular",
+                enfoque: "Cero impacto. Movilidad pura para bombear líquido sinovial y ganar estabilidad.",
+                icono: IconHeart,
+                ejercicios: [
+                    { tiempo: "3 Min", nombre: "Extensiones Controladas en Silla", desc: "Sentada con la espalda recta, extiende una pierna activando conscientemente el cuádriceps y regresa suave.", video: "https://www.youtube.com/watch?v=2-ypdhVgk8s" },
+                    { tiempo: "7 Min", nombre: "Puentes de Glúteo Estabilizadores", desc: "Boca arriba, eleva la pelvis activando glúteos y abdomen, quitándole toda la carga directa a tus rodillas.", video: "https://www.youtube.com/watch?v=rC3MnHMq4cg" },
+                    { tiempo: "5 Min", nombre: "Estiramiento de Pantorrilla", desc: "De pie apoyada en una pared, realiza un estiramiento pasivo y controlado para liberar tensión acumulada en el tendón de Aquiles y gemelos.", video: "https://youtu.be/aF6_3g2rJ5Q?si=zKr6mH07wXXRo81G" }
+                ]
+            },
+            energia: {
+                titulo: "Reseteo Vital y Oxigenación",
+                enfoque: "Despierta tu cuerpo y mente por completo sin sobrecargar tu sistema adrenal.",
+                icono: IconZap,
+                ejercicios: [
+                    { tiempo: "3 Min", nombre: "Sacudida Linfática Consciente", desc: "Rebota suavemente sobre tus talones dejando los brazos y hombros totalmente sueltos para activar la linfa.", video: "https://www.youtube.com/watch?v=vw1tcO0lWOc" },
+                    { tiempo: "7 Min", nombre: "Marcha Estacionaria Aligerada", desc: "Eleva las rodillas de forma muy suave en tu lugar, coordinando un balanceo natural y armónico de tus brazos.", video: "https://www.youtube.com/watch?v=WtdYpNbe6VQ" },
+                    { tiempo: "5 Min", nombre: "Respiración de Expansión Pránica", desc: "Inhala profundamente expandiendo costillas mientras elevas brazos al cielo, exhala soltando tensiones.", video: "https://www.youtube.com/watch?v=LXQiPIpbnrg" }
+                ]
+            }
+        };
+
+        function App() {
+            const [screen, setScreen] = useState('home'); 
+            const [selectedId, setSelectedId] = useState(null);
+            const [loadingText, setLoadingText] = useState('');
+            const [checkedExercises, setCheckedExercises] = useState([false, false, false]);
+            
+            const [streak, setStreak] = useState(() => Number(localStorage.getItem('v_streak_15min') || 0));
+            const [totalMinutes, setTotalMinutes] = useState(() => Number(localStorage.getItem('v_minutes_15min') || 0));
+
+            useEffect(() => {
+                localStorage.setItem('v_streak_15min', streak);
+                localStorage.setItem('v_minutes_15min', totalMinutes);
+            }, [streak, totalMinutes]);
+
+            const handleSelectRoutine = (id) => {
+                setSelectedId(id);
+                setScreen('loading');
+                setCheckedExercises([false, false, false]);
+
+                const messages = [
+                    "Filtrando ejercicios de impacto cero...",
+                    "Alineando secuencia de 15 minutos...",
+                    "Preparando tu espacio de calma y alivio..."
+                ];
+
+                let currentStep = 0;
+                setLoadingText(messages[0]);
+
+                const interval = setInterval(() => {
+                    currentStep++;
+                    if (currentStep < messages.length) {
+                        setLoadingText(messages[currentStep]);
+                    } else {
+                        clearInterval(interval);
+                        setScreen('result');
+                    }
+                }, 800);
+            };
+
+            const toggleCheck = (index) => {
+                const updated = [...checkedExercises];
+                updated[index] = !updated[index];
+                setCheckedExercises(updated);
+            };
+
+            const completeRoutine = () => {
+                setStreak(prev => prev + 1);
+                setTotalMinutes(prev => prev + 15);
+                setScreen('success');
+            };
+
+            const restartApp = () => {
+                setScreen('home');
+                setSelectedId(null);
+            };
+
+            const activeRoutine = DATA_RUTINAS[selectedId];
+
+            return (
+                <div class="w-full bg-linen-50 rounded-3xl shadow-xl border border-linen-200 overflow-hidden relative">
+                    
+                    {/* Fondo decorativo orgánico */}
+                    <div class="absolute top-0 right-0 p-4 opacity-15 pointer-events-none select-none">
+                        <svg width="120" height="120" viewBox="0 0 100 100" fill="currentColor" class="text-rosegold-500">
+                            <path d="M50,10 C65,30 80,40 90,60 C70,70 50,65 50,90 C50,65 30,70 10,60 C20,40 35,30 50,10 Z" />
+                        </svg>
+                    </div>
+
+                    {/* Encabezado */}
+                    <header class="bg-gradient-to-b from-rosegold-100 to-linen-50 border-b border-linen-200 px-6 pt-10 pb-6 text-center relative z-10">
+                        <div class="inline-flex items-center gap-1.5 bg-rosegold-200/50 text-rosegold-600 px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider uppercase mb-3">
+                            🌱 Cero Impacto Clínico
+                        </div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">15 Minutos Sin Dolor</h1>
+                        <p class="text-sm md:text-base text-slate-600 mt-1.5 font-light">
+                            Diseñador Inteligente de Micro-Rutinas para la Mujer de Más de 40
+                        </p>
+
+                        {/* Gamificación */}
+                        <div class="flex justify-center gap-6 mt-5 bg-white/70 backdrop-blur-sm border border-linen-200 py-2.5 px-4 rounded-xl max-w-sm mx-auto shadow-sm">
+                            <div class="text-center">
+                                <span class="block text-xs font-medium text-slate-400 uppercase tracking-wider">Racha Activa</span>
+                                <span class="text-base font-bold text-rosegold-500 flex items-center justify-center gap-1">
+                                    🔥 {streak} {streak === 1 ? 'Día' : 'Días'}
+                                </span>
+                            </div>
+                            <div class="w-px bg-slate-200 my-1"></div>
+                            <div class="text-center">
+                                <span class="block text-xs font-medium text-slate-400 uppercase tracking-wider">Tiempo Aliviado</span>
+                                <span class="text-base font-bold text-slate-700 flex items-center justify-center gap-1">
+                                    <IconClock className="w-4 h-4 text-slate-400 mr-1" /> {totalMinutes} min
+                                </span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Contenido Principal */}
+                    <main class="p-6 md:p-8 relative z-10">
+
+                        {/* PANTALLA 1: HOME */}
+                        {screen === 'home' && (
+                            <div>
+                                <h2 class="text-lg font-medium text-slate-700 mb-5 text-center">
+                                    ¿En qué zona sientes mayor rigidez o tensión el día de hoy?
+                                </h2>
+                                <div class="space-y-3">
+                                    {Object.entries(DATA_RUTINAS).map(([id, item]) => {
+                                        const IconComp = item.icono;
+                                        return (
+                                            <button
+                                                key={id}
+                                                onClick={() => handleSelectRoutine(id)}
+                                                class="w-full bg-white border border-slate-200/80 rounded-2xl p-4 text-left transition-all duration-300 hover:border-rosegold-400 hover:bg-rosegold-50/30 hover:scale-[1.01] active:scale-95 shadow-sm group flex items-center justify-between"
+                                            >
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-11 h-11 bg-rosegold-100 rounded-xl flex items-center justify-center text-rosegold-500 group-hover:bg-rosegold-200/50 transition-colors">
+                                                        <IconComp />
+                                                    </div>
+                                                    <div>
+                                                        <h3 class="font-semibold text-slate-800 text-base">{item.titulo}</h3>
+                                                        <p class="text-xs text-slate-500 font-light mt-0.5">{item.enfoque}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="text-slate-300 group-hover:text-rosegold-500 transition-colors">
+                                                    <IconChevronRight />
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PANTALLA 2: CARGA */}
+                        {screen === 'loading' && (
+                            <div class="py-12 flex flex-col items-center justify-center text-center">
+                                <div class="w-14 h-14 bg-rosegold-400 rounded-full flex items-center justify-center text-white text-xl animate-bounce shadow-md">
+                                    ⏱️
+                                </div>
+                                <p class="mt-5 text-base font-medium text-rosegold-600">
+                                    {loadingText}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* PANTALLA 3: RESULTADO */}
+                        {screen === 'result' && activeRoutine && (
+                            <div>
+                                <div class="bg-white border border-linen-200 rounded-2xl p-5 mb-6 shadow-sm">
+                                    <span class="text-xs font-semibold text-rosegold-500 uppercase tracking-wider block mb-1">Tu Prescripción</span>
+                                    <h2 class="text-xl font-bold text-slate-800">{activeRoutine.titulo}</h2>
+                                    <p class="text-sm text-slate-500 mt-1 font-light">{activeRoutine.enfoque}</p>
+                                    
+                                    <div class="flex items-center gap-1.5 mt-3 text-xs font-medium text-slate-400">
+                                        <IconClock /> Inversión Total: Exactamente 15 Minutos
+                                    </div>
+                                </div>
+
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">Secuencia de Bloques</h3>
+                                <div class="space-y-3 mb-6">
+                                    {activeRoutine.ejercicios.map((ej, index) => (
+                                        <div 
+                                            key={index}
+                                            class={`border rounded-xl p-4 transition-all bg-white shadow-sm flex flex-col sm:flex-row gap-4 items-start ${
+                                                checkedExercises[index] ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-100'
+                                            }`}
+                                        >
+                                            <button 
+                                                onClick={() => toggleCheck(index)}
+                                                class={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors mt-0.5 flex-shrink-0 ${
+                                                    checkedExercises[index] 
+                                                        ? 'bg-emerald-500 border-emerald-500 text-white' 
+                                                        : 'border-slate-300 bg-white hover:border-rosegold-400'
+                                                }`}
+                                            >
+                                                {checkedExercises[index] && <IconCheck />}
+                                            </button>
+
+                                            <div class="flex-1">
+                                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                                    <span class="text-xs font-bold bg-rosegold-100 text-rosegold-600 px-2 py-0.5 rounded">
+                                                        {ej.tiempo}
+                                                    </span>
+                                                    <h4 class={`font-semibold text-sm md:text-base ${checkedExercises[index] ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                                                        {ej.nombre}
+                                                    </h4>
+                                                </div>
+                                                <p class="text-xs md:text-sm text-slate-600 font-light leading-relaxed mb-3">
+                                                    {ej.desc}
+                                                </p>
+
+                                                {/* Enlace Externo Funcional */}
+                                                <a 
+                                                    href={ej.video} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    class="inline-flex items-center gap-1.5 text-xs bg-rosegold-50 hover:bg-rosegold-100 text-rosegold-600 font-semibold px-3 py-1.5 rounded-lg border border-rosegold-200/50 transition-all active:scale-95"
+                                                >
+                                                    <IconPlay /> Ver Mi Video Guía Exclusivo
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div class="space-y-2.5">
+                                    <button
+                                        onClick={completeRoutine}
+                                        disabled={!checkedExercises.every(Boolean)}
+                                        class={`w-full py-4 rounded-xl font-bold text-center tracking-wide transition-all shadow-md flex items-center justify-center gap-2 ${
+                                            checkedExercises.every(Boolean)
+                                                ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-[1.01] active:scale-95'
+                                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        <IconAward />
+                                        {checkedExercises.every(Boolean) ? "¡Completar Rutina y Registrar!" : "Completa los 3 bloques para registrar"}
+                                    </button>
+
+                                    <button
+                                        onClick={restartApp}
+                                        class="w-full py-3 text-center text-xs font-medium text-slate-400 hover:text-rosegold-500 transition-colors flex items-center justify-center gap-1.5"
+                                    >
+                                        <IconRotate /> Cambiar de zona / Diseñar otra rutina
+                                    </button>
+                                end</div>
+                            </div>
+                        )}
+
+                        {/* PANTALLA 4: LOGRO */}
+                        {screen === 'success' && (
+                            <div class="py-6 text-center">
+                                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                    <IconCheck />
+                                </div>
+                                <h2 class="text-xl font-bold text-slate-800">¡Orgullosa de ti!</h2>
+                                <p class="text-sm text-slate-500 max-w-sm mx-auto font-light mt-2 px-4">
+                                    Has invertido 15 minutos en regalarle movilidad, salud e impacto cero a tus articulaciones hoy. Tu cuerpo te lo agradece.
+                                </p>
+
+                                <div class="mt-6 bg-white border border-linen-200 p-4 rounded-2xl max-w-xs mx-auto shadow-sm">
+                                    <span class="text-xs font-medium text-slate-400 block mb-0.5">Progreso Total</span>
+                                    <span class="text-lg font-bold text-slate-700 block">🔥 Racha Guardada: {streak} {streak === 1 ? 'Día' : 'Días'}</span>
+                                </div>
+
+                                <button
+                                    onClick={restartApp}
+                                    class="mt-8 bg-rosegold-400 hover:bg-rosegold-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:scale-[1.01] active:scale-95 text-sm"
+                                >
+                                    Volver al Tablero Principal
+                                </button>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer class="bg-linen-100 border-t border-linen-200/60 py-3.5 text-center text-[11px] text-slate-400 font-light relative z-10">
+                        Progreso guardado automáticamente de forma local • Tu bienestar es prioridad
+                    </footer>
+                </div>
+            );
+        }
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
